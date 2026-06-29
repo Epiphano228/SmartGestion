@@ -1,0 +1,75 @@
+databases:
+  - name: smartgestion-db
+    databaseName: smartgestion
+    user: smartgestion
+    region: frankfurt
+    plan: basic-256mb
+    ipAllowList: []
+
+services:
+  - type: web
+    name: smartgestion
+    runtime: docker
+    repo: https://github.com/Epiphano228/SmartGestion
+    branch: main
+    region: frankfurt
+    plan: starter
+    autoDeployTrigger: checksPass
+    healthCheckPath: /up
+    preDeployCommand: su-exec www-data php artisan migrate --force
+    initialDeployHook: su-exec www-data php artisan db:seed --force
+    envVars:
+      - key: APP_NAME
+        value: SmartGestion
+      - key: APP_ENV
+        value: production
+      - key: APP_DEBUG
+        value: "false"
+      - key: APP_KEY
+        sync: false
+      - key: APP_URL
+        fromService:
+          name: smartgestion
+          type: web
+          envVarKey: RENDER_EXTERNAL_URL
+      - key: ASSET_URL
+        fromService:
+          name: smartgestion
+          type: web
+          envVarKey: RENDER_EXTERNAL_URL
+      - key: APP_LOCALE
+        value: fr
+      - key: APP_FALLBACK_LOCALE
+        value: fr
+      - key: DB_CONNECTION
+        value: pgsql
+      - key: DB_URL
+        fromDatabase:
+          name: smartgestion-db
+          property: connectionString
+      - key: LOG_CHANNEL
+        value: stderr
+      - key: LOG_LEVEL
+        value: warning
+      - key: SESSION_DRIVER
+        value: database
+      - key: SESSION_SECURE_COOKIE
+        value: "true"
+      - key: CACHE_STORE
+        value: file
+      - key: QUEUE_CONNECTION
+        value: sync
+      - key: FILESYSTEM_DISK
+        value: public
+      - key: MAIL_MAILER
+        value: log
+      - key: ADMIN_NAME
+        value: Administrateur
+      - key: ADMIN_EMAIL
+        sync: false
+      - key: ADMIN_PASSWORD
+        sync: false
+    disk:
+      name: smartgestion-storage
+      mountPath: /var/www/html/storage/app/public
+      sizeGB: 1

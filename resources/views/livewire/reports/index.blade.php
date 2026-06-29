@@ -1,0 +1,29 @@
+<div class="space-y-6">
+    <x-page-header eyebrow="Analyse commerciale" title="Statistiques" description="Comparez facturation, encaissements et conversion sur une période commune.">
+        <x-slot:actions><label class="relative"><span class="sr-only">Période</span><select wire:model.live="period" class="field min-w-44"><option value="3">3 derniers mois</option><option value="6">6 derniers mois</option><option value="12">12 derniers mois</option><option value="24">24 derniers mois</option></select></label></x-slot:actions>
+    </x-page-header>
+
+    @php
+        $cards = [
+            ['Facturé',number_format($turnover,0,',',' ').' '.$currency,'receipt','bg-indigo-50 text-indigo-600','Hors factures annulées'],
+            ['Encaissé',number_format($collected,0,',',' ').' '.$currency,'wallet','bg-emerald-50 text-emerald-600',$collectionRate.' % du facturé'],
+            ['À encaisser',number_format($outstanding,0,',',' ').' '.$currency,'alert','bg-rose-50 text-rose-600',$overdueCount.' facture(s) échue(s)'],
+            ['Conversion',$conversionRate.' %','arrow-right','bg-cyan-50 text-cyan-600','Devis et proformas transformés'],
+            ['Clients actifs',$activeClients,'users','bg-amber-50 text-amber-600',$invoiceCount.' facture(s)'],
+        ];
+    @endphp
+    <section class="grid grid-cols-2 gap-3 lg:grid-cols-3 xl:grid-cols-5">
+        @foreach($cards as [$label,$value,$icon,$color,$hint])<article class="stat-card"><div class="flex items-start justify-between gap-2"><p class="text-[9px] font-extrabold uppercase tracking-wider text-slate-400 sm:text-xs">{{ $label }}</p><span class="grid size-8 place-items-center rounded-xl {{ $color }}"><x-icon :name="$icon" :size="16"/></span></div><p class="mt-3 truncate text-base font-black text-slate-950 sm:text-xl">{{ $value }}</p><p class="mt-1 truncate text-[10px] text-slate-400">{{ $hint }}</p></article>@endforeach
+    </section>
+
+    <section class="grid gap-5 xl:grid-cols-[minmax(0,1.55fr)_minmax(300px,.75fr)]">
+        <article class="panel min-w-0 p-5 sm:p-6"><div class="flex items-start justify-between"><div><h3 class="font-extrabold text-slate-950">Facturation mensuelle</h3><p class="mt-1 text-xs text-slate-400">Évolution sur la période sélectionnée</p></div><div class="text-right"><p class="text-[10px] font-bold uppercase text-slate-400">Facture moyenne</p><p class="mt-1 text-sm font-black text-slate-900">{{ number_format($averageInvoice,0,',',' ') }} {{ $currency }}</p></div></div>
+            @php $max = max(1, $monthly->max('value')); @endphp
+            <div class="table-scroll mt-7 overflow-x-auto pb-2"><div class="flex h-64 items-end gap-2 sm:gap-3" style="min-width: {{ max(420,$monthly->count()*52) }}px">@foreach($monthly as $point)<div class="group flex h-full min-w-8 flex-1 flex-col justify-end gap-2" title="{{ $point['full'] }} : {{ number_format($point['value'],0,',',' ') }} {{ $currency }}"><div class="relative flex flex-1 items-end rounded-t-lg bg-slate-50"><div class="w-full rounded-t-lg bg-gradient-to-t from-indigo-600 to-cyan-400 transition-opacity group-hover:opacity-80" style="height:{{ max(2.5,$point['value']/$max*100) }}%"></div></div><span class="truncate text-center text-[9px] font-bold uppercase text-slate-400">{{ $point['label'] }}</span></div>@endforeach</div></div>
+        </article>
+
+        <article class="panel p-5 sm:p-6"><h3 class="font-extrabold text-slate-950">Meilleurs clients</h3><p class="mt-1 text-xs text-slate-400">Classés par volume facturé</p><div class="mt-6 space-y-5">@forelse($topClients as $index=>$row)<div><div class="flex items-center gap-3"><span class="grid size-7 shrink-0 place-items-center rounded-lg bg-slate-100 text-[10px] font-black text-slate-500">{{ $index+1 }}</span><div class="min-w-0 flex-1"><div class="flex justify-between gap-2"><p class="truncate text-xs font-bold text-slate-800">{{ $row['client']->company_name }}</p><p class="shrink-0 text-xs font-black text-slate-900">{{ number_format($row['total'],0,',',' ') }}</p></div><div class="mt-2 h-1.5 overflow-hidden rounded-full bg-slate-100"><div class="h-full rounded-full bg-indigo-500" style="width:{{ $turnover ? max(3,$row['total']/$turnover*100) : 0 }}%"></div></div><p class="mt-1 text-[9px] text-slate-400">{{ $row['count'] }} facture(s)</p></div></div></div>@empty<x-empty-state icon="users" title="Pas encore de données" description="Les clients apparaîtront après les premières factures." class="py-10"/>@endforelse</div></article>
+    </section>
+
+    <section class="grid gap-4 sm:grid-cols-3"><article class="panel p-5"><div class="flex items-center gap-3"><span class="grid size-10 place-items-center rounded-xl bg-emerald-50 text-emerald-600"><x-icon name="check" :size="19"/></span><div><p class="text-xs font-bold text-slate-400">Taux d’encaissement</p><p class="mt-0.5 text-xl font-black text-slate-950">{{ $collectionRate }} %</p></div></div></article><article class="panel p-5"><div class="flex items-center gap-3"><span class="grid size-10 place-items-center rounded-xl bg-indigo-50 text-indigo-600"><x-icon name="receipt" :size="19"/></span><div><p class="text-xs font-bold text-slate-400">Facture moyenne</p><p class="mt-0.5 text-xl font-black text-slate-950">{{ number_format($averageInvoice,0,',',' ') }} <small>{{ $currency }}</small></p></div></div></article><article class="panel p-5"><div class="flex items-center gap-3"><span class="grid size-10 place-items-center rounded-xl bg-rose-50 text-rose-600"><x-icon name="clock" :size="19"/></span><div><p class="text-xs font-bold text-slate-400">Échéances dépassées</p><p class="mt-0.5 text-xl font-black text-slate-950">{{ $overdueCount }}</p></div></div></article></section>
+</div>

@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<style>
+@page{margin:30px 38px}*{box-sizing:border-box}body{font-family:DejaVu Sans,Arial,sans-serif;color:#172033;font-size:11px;margin:0}.header{width:100%;margin-bottom:30px}.logo{max-height:52px;max-width:165px;margin-bottom:7px}.brand{font-size:19px;font-weight:bold;color:#3730a3}.company-description{font-size:9px;color:#64748b;margin-top:2px}.muted{color:#64748b}.doc-title{text-align:right;font-size:25px;font-weight:bold;color:#0f172a}.badge{display:inline-block;padding:5px 10px;border-radius:12px;background:#eef2ff;color:#4338ca;font-weight:bold}.box{background:#f8fafc;border:1px solid #e2e8f0;border-radius:8px;padding:15px}.client{width:46%;margin-left:54%;margin-bottom:25px}.client strong{font-size:14px}.meta{width:100%;margin:20px 0;border-collapse:collapse}.meta td{width:50%;padding:10px 12px;border:1px solid #e2e8f0}.items{width:100%;border-collapse:collapse;table-layout:fixed}.items th{background:#111d33;color:white;padding:10px 8px;text-align:left;font-size:9px;text-transform:uppercase;vertical-align:middle}.items th.right{text-align:right}.items td{padding:11px 8px;border-bottom:1px solid #e2e8f0;vertical-align:top}.items td.right{vertical-align:middle;white-space:nowrap;font-variant-numeric:tabular-nums}.item-name{font-size:11px;color:#0f172a}.item-description{margin-top:3px;font-size:9px;line-height:1.4;color:#64748b}.right{text-align:right}.totals td:last-child{width:58%;white-space:nowrap;font-variant-numeric:tabular-nums}.totals{width:42%;margin-left:58%;margin-top:18px;border-collapse:collapse}.totals td{padding:6px}.totals .grand td{border-top:2px solid #0f172a;padding-top:10px;font-size:15px;font-weight:bold;color:#3730a3}.notes{margin-top:28px;padding:12px;background:#f8fafc}.footer{position:fixed;bottom:-10px;left:0;right:0;border-top:1px solid #e2e8f0;padding-top:8px;text-align:center;color:#64748b;font-size:8px;line-height:1.5}
+</style>
+</head>
+<body>
+<table class="header"><tr><td style="width:60%">
+@if($settings['pdf_logo_path'] ?? null)<img src="{{ $settings['pdf_logo_path'] }}" class="logo"><br>@endif
+<span class="brand">{{ $settings['company_name'] ?? 'SmartGestion' }}</span>
+@if($settings['company_description'] ?? null)<div class="company-description">{{ $settings['company_description'] }}</div>@endif
+<div class="muted" style="margin-top:5px">{{ $settings['company_address'] ?? '' }}<br>{{ $settings['company_phone'] ?? '' }} {{ $settings['company_email'] ?? '' }}<br>{{ ($settings['company_tax_number'] ?? '') ? 'NIF : '.$settings['company_tax_number'] : '' }}</div>
+</td><td><div class="doc-title">{{ strtoupper($document->type->label()) }}</div><div style="text-align:right;margin-top:8px"><span class="badge">{{ $document->number }}</span></div></td></tr></table>
+@if($settings['document_header'] ?? null)<div style="margin-bottom:18px">{{ $settings['document_header'] }}</div>@endif
+<div class="client box"><span class="muted">CLIENT</span><br><strong>{{ $document->client->company_name }}</strong><br>{{ $document->client->contact_name }}<br>{{ $document->client->address }}<br>{{ $document->client->city }} {{ $document->client->country }}<br>{{ $document->client->tax_number ? 'NIF : '.$document->client->tax_number : '' }}</div>
+<table class="meta"><tr><td><span class="muted">Date d’émission</span><br><strong>{{ $document->issued_at->format('d/m/Y') }}</strong></td><td><span class="muted">{{ $document->type->value === 'invoice' ? 'Échéance' : 'Validité' }}</span><br><strong>{{ $document->due_at?->format('d/m/Y') ?? '—' }}</strong></td></tr></table>
+<table class="items"><colgroup><col style="width:42%"><col style="width:8%"><col style="width:18%"><col style="width:10%"><col style="width:22%"></colgroup><thead><tr><th>Produit / service</th><th class="right">Qté</th><th class="right">Prix HT</th><th class="right">TVA</th><th class="right">Total TTC</th></tr></thead><tbody>
+@foreach($document->items as $item)
+@php $itemName = $item->name ?: $item->product?->name ?: $item->description; $itemDescription = $item->description !== $itemName ? $item->description : null; @endphp
+<tr><td><strong class="item-name">{{ $itemName }}</strong>@if($itemDescription)<div class="item-description">{{ $itemDescription }}</div>@endif</td><td class="right">{{ rtrim(rtrim(number_format($item->quantity,3,',',' '),'0'),',') }}</td><td class="right">{{ number_format($item->unit_price,2,',',' ') }}</td><td class="right">{{ number_format($item->tax_rate,1,',',' ') }}%</td><td class="right"><strong>{{ number_format($item->line_total,2,',',' ') }}</strong></td></tr>
+@endforeach
+</tbody></table>
+<table class="totals"><tr><td class="muted">Sous-total HT</td><td class="right">{{ number_format($document->subtotal,2,',',' ') }}</td></tr><tr><td class="muted">TVA</td><td class="right">{{ number_format($document->tax_total,2,',',' ') }}</td></tr><tr class="grand"><td>TOTAL TTC</td><td class="right">{{ number_format($document->total,2,',',' ') }} {{ $document->currency }}</td></tr>@if($document->type->value==='invoice' && $document->paid_total>0)<tr><td class="muted">Déjà payé</td><td class="right">{{ number_format($document->paid_total,2,',',' ') }}</td></tr><tr><td><strong>Solde restant</strong></td><td class="right"><strong>{{ number_format($document->balance,2,',',' ') }}</strong></td></tr>@endif</table>
+@if($document->notes || $document->terms)<div class="notes">@if($document->notes)<strong>Note</strong><br>{{ $document->notes }}<br><br>@endif @if($document->terms)<strong>Conditions</strong><br>{{ $document->terms }}@endif</div>@endif
+<div class="footer">{{ $settings['document_footer'] ?? '' }}<br>{{ $settings['legal_notice'] ?? '' }}</div>
+</body></html>
