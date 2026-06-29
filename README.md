@@ -54,15 +54,14 @@ php artisan test
 npm run build
 ```
 
-## Déploiement sur Render
+## Déploiement gratuit sur Render
 
 Le fichier `render.yaml` crée automatiquement :
 
-- le service Docker `smartgestion` dans la région de Francfort ;
-- une base PostgreSQL privée ;
-- un disque persistant pour les logos et photos de profil ;
-- les migrations avant chaque déploiement ;
-- le compte administrateur lors du premier déploiement.
+- un service Docker gratuit dans la région de Francfort ;
+- une base PostgreSQL gratuite et privée ;
+- les migrations et le compte administrateur au démarrage ;
+- le déploiement uniquement après réussite des tests GitHub Actions.
 
 ### Première mise en ligne
 
@@ -73,26 +72,30 @@ Le fichier `render.yaml` crée automatiquement :
    ```
 
 2. Dans Render, choisissez **New > Blueprint**.
-3. Connectez le dépôt `Epiphano228/SmartGestion` et sélectionnez la branche `main`.
-4. Render détecte `render.yaml`. Renseignez les secrets demandés :
+3. Connectez le dépôt `Epiphano228/SmartGestion` et sélectionnez `main`.
+4. Renseignez les secrets demandés :
 
-   - `APP_KEY` : la clé générée à l’étape 1, commençant par `base64:` ;
+   - `APP_KEY` : la clé `base64:...` générée à l’étape 1 ;
    - `ADMIN_EMAIL` : l’adresse du premier administrateur ;
    - `ADMIN_PASSWORD` : un mot de passe fort d’au moins 12 caractères.
 
-5. Cliquez sur **Apply** et attendez que le service et PostgreSQL soient marqués disponibles.
-6. Ouvrez l’URL `https://smartgestion.onrender.com` indiquée par Render et connectez-vous avec les identifiants saisis.
+5. Cliquez sur **Apply**, attendez que PostgreSQL et le service soient disponibles, puis ouvrez l’URL fournie par Render.
 
-`APP_URL`, `ASSET_URL` et les identifiants PostgreSQL sont reliés automatiquement par le Blueprint. Ne copiez jamais votre `.env` local dans GitHub ou Render.
+`APP_URL`, `ASSET_URL` et la connexion PostgreSQL sont configurés automatiquement. Ne copiez jamais votre `.env` local dans GitHub ou Render.
 
-### Configuration des emails
+### Limites importantes du gratuit
 
-Le premier déploiement utilise `MAIL_MAILER=log`. Pour envoyer réellement les PDF, ajoutez ensuite dans **Service > Environment** les variables SMTP de votre fournisseur :
+- le service s’endort après 15 minutes sans visite et le premier réveil peut prendre environ une minute ;
+- les logos et photos de profil téléversés sont temporaires et disparaissent lors d’un redémarrage, d’une mise en veille ou d’un redéploiement ; l’interface revient alors automatiquement aux initiales ;
+- PostgreSQL est limité à 1 Go, sans sauvegarde, et expire 30 jours après sa création ;
+- Render bloque les ports SMTP 25, 465 et 587 sur les services gratuits.
+
+Pour tester l’envoi d’emails, utilisez un fournisseur autorisant le port `2525` :
 
 ```dotenv
 MAIL_MAILER=smtp
 MAIL_HOST=smtp.example.com
-MAIL_PORT=587
+MAIL_PORT=2525
 MAIL_USERNAME=...
 MAIL_PASSWORD=...
 MAIL_SCHEME=smtp
@@ -100,10 +103,8 @@ MAIL_FROM_ADDRESS=contact@example.com
 MAIL_FROM_NAME=SmartGestion
 ```
 
-Enregistrez avec **Save and deploy**.
-
 ### Déploiements suivants
 
-Chaque push sur `main` lance d’abord GitHub Actions (tests Laravel et compilation Vite). Render déploie uniquement si ces contrôles passent, construit l’image, exécute `php artisan migrate --force`, vérifie `/up`, puis remplace la version active.
+Chaque push sur `main` lance GitHub Actions. Render déploie seulement après réussite des tests et de la compilation, puis le conteneur exécute les migrations de manière idempotente avant de démarrer l’application.
 
-Le disque persistant impose une seule instance et quelques secondes d’indisponibilité pendant un déploiement. C’est le compromis nécessaire pour conserver localement les logos et avatars ; un stockage objet S3 permettrait ensuite de retirer cette limitation.
+Pour une utilisation réelle durable, la première évolution recommandée sera une base PostgreSQL permanente et un stockage objet compatible S3 pour les logos et avatars.

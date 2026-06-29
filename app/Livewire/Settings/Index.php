@@ -8,6 +8,7 @@ use App\Models\User;
 use App\Services\AvatarService;
 use App\Services\LogoService;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\Rule;
 use Livewire\Attributes\Layout;
 use Livewire\Attributes\Url;
@@ -96,7 +97,7 @@ class Index extends Component
         $this->resetValidation();
         $this->editingUserId = $user->id;
         $this->reset(['userAvatar', 'removeUserAvatar']);
-        $this->currentUserAvatar = $user->avatar_path;
+        $this->currentUserAvatar = $user->avatar_url ? $user->avatar_path : null;
         $this->userForm = $user->only(['name', 'email', 'role', 'is_active']) + ['password' => ''];
         $this->showUserForm = true;
     }
@@ -136,9 +137,11 @@ class Index extends Component
 
     public function render()
     {
+        $logoPath = Setting::getValue('logo_path');
+
         return view('livewire.settings.index', [
             'users' => User::orderBy('name')->get(),
-            'logoPath' => Setting::getValue('logo_path'),
+            'logoPath' => $logoPath && Storage::disk('public')->exists($logoPath) ? $logoPath : null,
         ])->title('Paramètres');
     }
 }

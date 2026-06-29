@@ -3,7 +3,7 @@ databases:
     databaseName: smartgestion
     user: smartgestion
     region: frankfurt
-    plan: basic-256mb
+    plan: free
     ipAllowList: []
 
 services:
@@ -13,11 +13,9 @@ services:
     repo: https://github.com/Epiphano228/SmartGestion
     branch: main
     region: frankfurt
-    plan: starter
+    plan: free
     autoDeployTrigger: checksPass
     healthCheckPath: /up
-    preDeployCommand: su-exec www-data php artisan migrate --force
-    initialDeployHook: su-exec www-data php artisan db:seed --force
     envVars:
       - key: APP_NAME
         value: SmartGestion
@@ -69,7 +67,3 @@ services:
         sync: false
       - key: ADMIN_PASSWORD
         sync: false
-    disk:
-      name: smartgestion-storage
-      mountPath: /var/www/html/storage/app/public
-      sizeGB: 1

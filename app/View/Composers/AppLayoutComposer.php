@@ -9,6 +9,7 @@ use App\Models\Document;
 use App\Models\Product;
 use App\Models\Setting;
 use Illuminate\Support\Facades\Schema;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\View\View;
 
 class AppLayoutComposer
@@ -47,10 +48,12 @@ class AppLayoutComposer
             ];
         }
 
+        $companyLogo = Setting::getValue('logo_path');
+
         $view->with([
             'navigationCounts' => $counts,
             'companyName' => Setting::getValue('company_name', 'SmartGestion'),
-            'companyLogo' => Setting::getValue('logo_path'),
+            'companyLogo' => $companyLogo && Storage::disk('public')->exists($companyLogo) ? $companyLogo : null,
         ]);
     }
 }

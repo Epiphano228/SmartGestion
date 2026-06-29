@@ -11,7 +11,7 @@ class SmartGestionSeeder extends Seeder
 {
     public function run(): void
     {
-        User::updateOrCreate(
+        User::firstOrCreate(
             ['email' => env('ADMIN_EMAIL', 'admin@smartgestion.local')],
             ['name' => env('ADMIN_NAME', 'Administrateur'), 'password' => env('ADMIN_PASSWORD', 'ChangeMe123!'), 'role' => 'admin', 'is_active' => true]
         );
@@ -32,6 +32,8 @@ class SmartGestionSeeder extends Seeder
             'payment_terms_days' => '30',
             'document_terms' => 'Paiement à effectuer avant la date d’échéance indiquée.',
         ];
-        foreach ($settings as $key => $value) Setting::setValue($key, $value);
+        foreach ($settings as $key => $value) {
+            Setting::firstOrCreate(['key' => $key], ['value' => $value, 'type' => 'string']);
+        }
     }
 }

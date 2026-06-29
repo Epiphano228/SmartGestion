@@ -86,7 +86,7 @@
         </div>
         <div class="border-t border-white/[.07] p-3">
             <div class="flex items-center gap-3 rounded-xl p-2" :class="collapsed ? 'lg:justify-center' : ''">
-                <span class="grid size-9 shrink-0 place-items-center overflow-hidden rounded-xl bg-white/10 text-xs font-black text-cyan-300 ring-1 ring-white/10">@if(auth()->user()->avatar_path)<img src="{{ asset('storage/'.auth()->user()->avatar_path) }}" alt="Photo de profil" class="h-full w-full object-cover">@else{{ strtoupper(substr(auth()->user()->name, 0, 2)) }}@endif</span>
+                <span class="grid size-9 shrink-0 place-items-center overflow-hidden rounded-xl bg-white/10 text-xs font-black text-cyan-300 ring-1 ring-white/10">@if(auth()->user()->avatar_url)<img src="{{ auth()->user()->avatar_url }}" alt="Photo de profil" class="h-full w-full object-cover">@else{{ strtoupper(substr(auth()->user()->name, 0, 2)) }}@endif</span>
                 <div x-show="!collapsed" class="min-w-0 flex-1"><p class="truncate text-xs font-bold text-white">{{ auth()->user()->name }}</p><p class="truncate text-[10px] text-slate-500">{{ auth()->user()->role === 'admin' ? 'Administrateur' : 'Gestionnaire' }}</p></div>
                 <form x-show="!collapsed" method="POST" action="{{ route('logout') }}">@csrf<button class="grid size-8 place-items-center rounded-lg text-slate-500 hover:bg-rose-500/10 hover:text-rose-400" title="Se déconnecter"><x-icon name="logout" :size="17"/></button></form>
             </div>
@@ -122,7 +122,7 @@
                     </div>
                 </div>
                 <div class="relative hidden sm:block" @click.outside="userOpen=false">
-                    <button @click="userOpen=!userOpen" class="flex h-10 items-center gap-2 rounded-xl border border-slate-200 bg-white pl-1.5 pr-2.5 shadow-sm hover:border-slate-300"><span class="grid size-7 place-items-center overflow-hidden rounded-lg bg-slate-900 text-[10px] font-black text-white">@if(auth()->user()->avatar_path)<img src="{{ asset('storage/'.auth()->user()->avatar_path) }}" alt="Photo de profil" class="h-full w-full object-cover">@else{{ strtoupper(substr(auth()->user()->name,0,2)) }}@endif</span><x-icon name="chevron-down" :size="14" class="text-slate-400"/></button>
+                    <button @click="userOpen=!userOpen" class="flex h-10 items-center gap-2 rounded-xl border border-slate-200 bg-white pl-1.5 pr-2.5 shadow-sm hover:border-slate-300"><span class="grid size-7 place-items-center overflow-hidden rounded-lg bg-slate-900 text-[10px] font-black text-white">@if(auth()->user()->avatar_url)<img src="{{ auth()->user()->avatar_url }}" alt="Photo de profil" class="h-full w-full object-cover">@else{{ strtoupper(substr(auth()->user()->name,0,2)) }}@endif</span><x-icon name="chevron-down" :size="14" class="text-slate-400"/></button>
                     <div x-cloak x-show="userOpen" x-transition.origin.top.right class="dropdown-panel right-0 w-64 p-2">
                         <div class="border-b border-slate-100 px-3 py-3"><p class="truncate text-sm font-bold text-slate-900">{{ auth()->user()->name }}</p><p class="truncate text-xs text-slate-400">{{ auth()->user()->email }}</p></div>
                         @if(auth()->user()->role === 'admin')<a href="{{ route('settings.index') }}" wire:navigate @click="userOpen=false" class="mt-1 flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-semibold text-slate-600 hover:bg-slate-50"><x-icon name="settings" :size="17"/>Paramètres</a>@endif
