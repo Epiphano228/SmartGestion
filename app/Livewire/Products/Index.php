@@ -89,9 +89,8 @@ class Index extends Component
             ->orderBy('name')->paginate(12);
 
         $metrics = Product::selectRaw(
-            'SUM(CASE WHEN is_active = ? THEN 1 ELSE 0 END) AS active,
-             SUM(CASE WHEN track_stock = ? AND stock_quantity <= 5 THEN 1 ELSE 0 END) AS low_stock',
-            [true, true],
+            'SUM(CASE WHEN is_active THEN 1 ELSE 0 END) AS active,
+             SUM(CASE WHEN track_stock AND stock_quantity <= 5 THEN 1 ELSE 0 END) AS low_stock',
         )->first();
 
         return view('livewire.products.index', [

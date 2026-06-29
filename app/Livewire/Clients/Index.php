@@ -97,9 +97,9 @@ class Index extends Component
 
         $metrics = Client::selectRaw(
             'COUNT(*) AS total,
-             SUM(CASE WHEN is_active = ? THEN 1 ELSE 0 END) AS active,
+             SUM(CASE WHEN is_active THEN 1 ELSE 0 END) AS active,
              SUM(CASE WHEN created_at >= ? THEN 1 ELSE 0 END) AS new_count',
-            [true, now()->startOfMonth()],
+            [now()->startOfMonth()],
         )->first();
 
         return view('livewire.clients.index', [
