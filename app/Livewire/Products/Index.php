@@ -61,7 +61,12 @@ class Index extends Component
             'form.is_active' => ['boolean'],
         ])['form'];
         $data['category_id'] = $data['category_id'] ?: null;
-        $product = Product::updateOrCreate(['id' => $this->editingId], $data);
+        if ($this->editingId) {
+            $product = Product::findOrFail($this->editingId);
+            $product->update($data);
+        } else {
+            $product = Product::create($data);
+        }
         ActivityLog::record($this->editingId ? 'updated' : 'created', ($this->editingId ? 'Article modifié : ' : 'Article créé : ').$product->name, $product);
         $this->showForm = false;
         $this->reset(['editingId', 'form']);

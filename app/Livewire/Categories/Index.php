@@ -57,7 +57,12 @@ class Index extends Component
             'form.color.regex' => 'Choisissez une couleur valide.',
         ])['form'];
 
-        $category = Category::updateOrCreate(['id' => $this->editingId], $data);
+        if ($this->editingId) {
+            $category = Category::findOrFail($this->editingId);
+            $category->update($data);
+        } else {
+            $category = Category::create($data);
+        }
         ActivityLog::record(
             $this->editingId ? 'updated' : 'created',
             ($this->editingId ? 'Catégorie modifiée : ' : 'Catégorie créée : ').$category->name,

@@ -58,7 +58,12 @@ class Index extends Component
             'form.is_active' => ['boolean'],
         ])['form'];
 
-        $client = Client::updateOrCreate(['id' => $this->editingId], $data);
+        if ($this->editingId) {
+            $client = Client::findOrFail($this->editingId);
+            $client->update($data);
+        } else {
+            $client = Client::create($data);
+        }
         ActivityLog::record($this->editingId ? 'updated' : 'created', ($this->editingId ? 'Client modifié : ' : 'Client créé : ').$client->company_name, $client);
         $this->showForm = false;
         $this->reset(['editingId', 'form']);
