@@ -60,7 +60,9 @@ class Index extends Component
             'form.stock_quantity' => ['numeric', 'min:0'],
             'form.is_active' => ['boolean'],
         ])['form'];
-        $data['category_id'] = $data['category_id'] ?: null;
+        $data['sku'] = filled($data['sku'] ?? null) ? trim($data['sku']) : null;
+        $data['description'] = filled($data['description'] ?? null) ? trim($data['description']) : null;
+        $data['category_id'] = filled($data['category_id'] ?? null) ? $data['category_id'] : null;
         if ($this->editingId) {
             $product = Product::findOrFail($this->editingId);
             $product->update($data);

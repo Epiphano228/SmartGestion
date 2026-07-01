@@ -38,4 +38,23 @@ class ProductManagementTest extends TestCase
         ]);
         $this->assertTrue(Product::firstOrFail()->is_active);
     }
+
+    public function test_multiple_products_can_be_created_without_optional_skus(): void
+    {
+        $user = User::factory()->create(['role' => 'manager', 'is_active' => true]);
+
+        foreach (['Produit sans référence A', 'Produit sans référence B'] as $name) {
+            Livewire::actingAs($user)
+                ->test(Index::class)
+                ->call('create')
+                ->set('form.name', $name)
+                ->set('form.sku', '')
+                ->set('form.unit_price', 1000)
+                ->call('save')
+                ->assertHasNoErrors();
+        }
+
+        $this->assertSame(2, Product::count());
+        $this->assertSame(2, Product::whereNull('sku')->count());
+    }
 }
